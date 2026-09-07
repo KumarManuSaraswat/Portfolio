@@ -12,7 +12,7 @@ const featuredProjects = [
     image: '/assets/devflow.png',
     imageAlt:
       'DevFlow dashboard showing team projects, tasks, and management features',
-    link: '#contact',
+    link: 'https://devs-flow.netlify.app/teams',
     linkLabel: 'Ask about DevFlow',
   },
   {
