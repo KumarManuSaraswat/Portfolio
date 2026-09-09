@@ -1,6 +1,7 @@
 import BackgroundVideo from './components/BackgroundVideo';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
+import StackGame from './components/StackGame';
 
 const featuredProjects = [
   {
@@ -221,6 +222,8 @@ export default function App() {
           ))}
         </div>
       </section>
+
+      <StackGame />
 
       <section
         id="process"

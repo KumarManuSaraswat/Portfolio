@@ -50,6 +50,10 @@ export default function Hero() {
             </a>
           </div>
 
+          <a href="#play" className="mt-6 inline-flex items-center gap-2 text-sm text-white/90 underline decoration-white/40 underline-offset-4 transition-colors hover:text-white">
+            <span aria-hidden="true">✳</span> Take a play break — try my mini game ↗
+          </a>
+
           <div className="mt-4">
             <a
               href="mailto:kumarsaraswat1983@gmail.com"

@@ -48,6 +48,10 @@ export default function Navbar() {
             Work
           </a>
 
+          <a href="#play" className="rounded-full border border-white/30 bg-white/10 px-3 py-1 text-sm transition-colors hover:bg-white hover:text-black">
+            Play ↗
+          </a>
+
           <a
             href="#process"
             className="transition-opacity hover:opacity-60"
@@ -123,6 +127,10 @@ export default function Navbar() {
           className="text-[32px] font-medium text-white transition-opacity hover:opacity-60"
         >
           Work
+        </a>
+
+        <a href="#play" onClick={closeMobileMenu} className="text-[32px] font-medium text-white transition-opacity hover:opacity-60">
+          Play ↗
         </a>
 
         <a
