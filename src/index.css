@@ -1,5 +1,30 @@
 @import "tailwindcss";
 
+.world-loader { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(ellipse at 85% 15%, #f38b53 0%, transparent 55%), linear-gradient(115deg, #49231d 0%, #a4472e 48%, #d76940 100%); color: #fff; opacity: 1; transition: opacity 450ms ease; }
+.world-loader--leaving { opacity: 0; pointer-events: none; }
+.world-loader-brand { position: absolute; top: 24px; left: 32px; padding: 10px 18px; border: 1px solid #ffffff33; border-radius: 999px; background: #0003; backdrop-filter: blur(16px); font-size: 13px; font-weight: 600; letter-spacing: .12em; }
+.world-loader-brand > span { margin-left: 8px; font-size: 22px; }
+.world-loader-center { width: min(calc(100% - 48px), 580px); padding: 24px; text-align: center; border: 1px solid #ffffff33; border-radius: 30px; background: #00000026; box-shadow: 0 20px 80px #00000029; backdrop-filter: blur(16px); }
+.world-loader-character { width: 100%; height: min(44vh, 360px); object-fit: contain; margin: 0 auto 14px; }
+.world-loader-label { margin: 0 0 12px; font-size: 9px; letter-spacing: .24em; color: #ffffffbf; }
+.world-loader-title { margin: 0; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.045em; font-weight: 500; }
+.world-loader-track { width: 150px; height: 3px; margin: 24px auto 16px; overflow: hidden; background: #ffffff33; }
+.world-loader-track > span { display: block; width: 45%; height: 100%; background: #fff; animation: world-loading 1.4s ease-in-out infinite; }
+.world-loader-caption { font-size: 12px; color: #ffffffd9; }
+.world-loader-footer { position: absolute; bottom: 26px; font-size: 9px; letter-spacing: .24em; color: #ffffffbf; }
+@media (max-height: 650px) {
+  .world-loader-character { height: 25vh; margin-bottom: 8px; }
+  .world-loader-center { padding: 16px; }
+  .world-loader-brand { top: 12px; left: 16px; }
+  .world-loader-footer { bottom: 12px; }
+}
+@keyframes world-loading { from { transform: translateX(-110%); } to { transform: translateX(330%); } }
+@media (prefers-reduced-motion: reduce) {
+  .world-loader { transition: none; }
+  .world-loader-character { visibility: hidden; }
+  .world-loader-track > span { animation: none; width: 100%; }
+}
+
 :root {
   --font-heading: 'HelveticaNowDisplay-Medium', 'Helvetica Neue', Arial, sans-serif;
   --font-body: 'HelveticaNowDisplayW01-Rg', 'Helvetica Neue', Arial, sans-serif;

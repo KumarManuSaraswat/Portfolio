@@ -3,6 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preload" as="image" href="/assets/loading-run.webp" fetchpriority="high" />
+    <style>
+      html, body { margin: 0; background: #a4472e; }
+      .boot-loader { position: fixed; inset: 0; display: grid; place-content: center; text-align: center; background: radial-gradient(ellipse at 85% 15%, #f38b53 0%, transparent 55%), linear-gradient(115deg, #49231d 0%, #a4472e 48%, #d76940 100%); color: #fff; font: 16px Arial, sans-serif; }
+    </style>
     <title>Mainframe</title>
     <meta name="description" content="Interactive full-screen landing page for Mainframe creative agency featuring A.R.I.A and mouse-scrubbed video." />
     <meta property="og:title" content="Mainframe" />
@@ -13,8 +18,8 @@
     <link rel="stylesheet" href="https://db.onlinewebfonts.com/c/1aa3377e489837a26d019bba501e779d?family=HelveticaNowDisplayW01-Rg" type="text/css" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><div class="boot-loader" role="status">Loading world…</div></div>
+    <noscript><p style="position:fixed;inset:0;z-index:1000;background:#f3eee5;padding:40px;font:18px Arial">Please enable JavaScript to explore this portfolio. You can also reach me at <a href="mailto:kumarsaraswat1983@gmail.com">kumarsaraswat1983@gmail.com</a>.</p></noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

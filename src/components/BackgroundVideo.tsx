@@ -2,13 +2,18 @@ import { useEffect, useRef } from 'react';
 
 const VIDEO_SRC = '/assets/portfolio-video.mp4';
 
-export default function BackgroundVideo() {
+export default function BackgroundVideo({ enabled = true, onReady, onError }: {
+  enabled?: boolean;
+  onReady?: () => void;
+  onError?: () => void;
+}) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const previousXRef = useRef<number | null>(null);
   const targetTimeRef = useRef<number>(0);
   const isSeekingRef = useRef<boolean>(false);
 
   useEffect(() => {
+    if (!enabled) return;
     const scrubVideo = (currentX: number) => {
       const video = videoRef.current;
 
@@ -67,7 +72,12 @@ export default function BackgroundVideo() {
       window.removeEventListener('touchmove', handleTouchMove);
       window.removeEventListener('touchend', resetPointerPosition);
     };
-  }, []);
+  }, [enabled]);
+
+  // Also handle a cached first frame that became available before effects ran.
+  useEffect(() => {
+    if (videoRef.current?.readyState >= 2) onReady?.();
+  }, [onReady]);
 
   const handleSeeked = () => {
     const video = videoRef.current;
@@ -100,6 +110,9 @@ export default function BackgroundVideo() {
         preload="auto"
         onSeeked={handleSeeked}
         onLoadedMetadata={handleLoadedMetadata}
+        onLoadedData={onReady}
+        onCanPlay={onReady}
+        onError={onError}
         aria-hidden="true"
         style={{
           position: 'fixed',

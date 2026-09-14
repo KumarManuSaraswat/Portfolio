@@ -13,7 +13,7 @@ export default function Navbar() {
         id="main-navbar"
         className="fixed left-4 right-4 top-4 z-50 flex w-auto items-center justify-between rounded-full border border-white/20 bg-black/20 px-5 py-3 text-white shadow-[0_8px_30px_rgba(0,0,0,0.12)] backdrop-blur-xl sm:left-6 sm:right-6 sm:top-5 sm:px-7 sm:py-3.5 md:left-8 md:right-8 md:px-8"
       >
-        <div id="navbar-logo" className="flex select-none items-center gap-3">
+        <a id="navbar-logo" href="#mainframe-app" onClick={closeMobileMenu} aria-label="Kumar — back to top" className="flex select-none items-center gap-3 no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
           <span
             className="text-[22px] font-semibold tracking-tighter text-white sm:text-[26px]"
             style={{ fontFamily: 'var(--font-heading)' }}
@@ -26,9 +26,8 @@ export default function Navbar() {
             style={{ letterSpacing: '-0.02em' }}
             aria-hidden="true"
           >
-            ✳︎
           </span>
-        </div>
+        </a>
 
         <div
           id="desktop-nav-links"

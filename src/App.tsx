@@ -1,4 +1,6 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
 import BackgroundVideo from './components/BackgroundVideo';
+import LoadingScreen from './components/LoadingScreen';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import StackGame from './components/StackGame';
@@ -68,12 +70,41 @@ const experience = [
 ];
 
 export default function App() {
+  const [backgroundSettled, setBackgroundSettled] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const startedAt = useRef(performance.now());
+  const settleBackground = useCallback(() => setBackgroundSettled(true), []);
+
+  useEffect(() => {
+    // A failed or stalled video must never make the portfolio inaccessible.
+    const timeout = window.setTimeout(settleBackground, 12000);
+    return () => window.clearTimeout(timeout);
+  }, [settleBackground]);
+
+  useEffect(() => {
+    if (!backgroundSettled) return;
+    const timer = window.setTimeout(() => setRevealed(true), Math.max(0, 5000 - (performance.now() - startedAt.current)));
+    return () => window.clearTimeout(timer);
+  }, [backgroundSettled]);
+
+  useEffect(() => {
+    if (revealed) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [revealed]);
+
   return (
+    <>
+    <BackgroundVideo enabled={revealed} onReady={settleBackground} onError={settleBackground} />
+    <LoadingScreen revealed={revealed} />
     <main
       id="mainframe-app"
+      inert={!revealed}
+      aria-hidden={!revealed}
+      style={{ visibility: revealed ? 'visible' : 'hidden' }}
       className="relative min-h-screen w-full select-text text-black"
     >
-      <BackgroundVideo />
       <Navbar />
       <Hero />
 
@@ -170,35 +201,42 @@ export default function App() {
           {featuredProjects.map((project) => (
             <article
               key={project.title}
-              className="group overflow-hidden rounded-[28px] border border-white/35 bg-white/75 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.18)] backdrop-blur-md transition-transform duration-300 hover:-translate-y-1"
+              className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-white/60 bg-white/85 p-4 shadow-[0_12px_32px_rgba(0,0,0,0.18)] backdrop-blur-md transition duration-300 hover:border-white hover:bg-white/95 hover:shadow-[0_24px_48px_rgba(0,0,0,0.24)] motion-safe:hover:-translate-y-2 sm:p-5"
             >
-              <div className="mb-6 h-48 overflow-hidden rounded-[22px] bg-black/15">
+              <a
+                href={project.link}
+                target={project.link.startsWith('http') ? '_blank' : undefined}
+                rel={project.link.startsWith('http') ? 'noreferrer' : undefined}
+                aria-label={`Visit ${project.title}`}
+                className="relative mb-6 block aspect-[3/2] shrink-0 overflow-hidden rounded-[20px] bg-black/10 ring-1 ring-black/5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
+              >
                 <img
                   src={project.image}
                   alt={project.imageAlt}
-                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="h-full w-full object-cover object-top transition-transform duration-500 motion-safe:group-hover:scale-105"
                   loading="lazy"
                 />
-              </div>
+                <span aria-hidden="true" className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-full border border-white/40 bg-black/80 text-xl text-white shadow-lg transition-colors group-hover:bg-black">↗</span>
+              </a>
 
               <div className="mb-4 flex flex-wrap gap-2">
                 {project.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full border border-black/10 bg-white/85 px-2.5 py-1 text-[11px] uppercase tracking-[0.12em] text-black/60"
+                    className="rounded-full border border-black/5 bg-black/5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-[0.08em] text-black/65"
                   >
                     {tag}
                   </span>
                 ))}
               </div>
 
-              <h3 className="text-2xl text-black">{project.title}</h3>
+              <h3 className="text-2xl font-semibold tracking-tight text-black">{project.title}</h3>
 
-              <p className="mt-3 text-sm leading-6 text-black/75">
+              <p className="mt-3 mb-6 text-sm leading-6 text-black/70">
                 {project.summary}
               </p>
 
-              <div className="mt-6 flex items-center justify-between gap-4 border-t border-black/10 pt-4">
+              <div className="mt-auto flex flex-wrap items-center justify-between gap-4 border-t border-black/10 pt-5">
                 <span className="text-sm font-medium text-black">
                   {project.impact}
                 </span>
@@ -213,7 +251,7 @@ export default function App() {
                       ? 'noreferrer'
                       : undefined
                   }
-                  className="shrink-0 text-sm font-medium underline underline-offset-4 transition-opacity hover:opacity-60"
+                  className="inline-flex items-center gap-2 rounded-full bg-black px-4 py-2.5 text-xs font-medium text-white transition-colors hover:bg-black/75 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black"
                 >
                   {project.linkLabel}
                 </a>
@@ -304,7 +342,7 @@ export default function App() {
         className="relative z-10 mx-auto max-w-6xl px-6 pb-28 sm:px-8 md:px-12"
       >
         <div className="rounded-[30px] border border-white/30 bg-white/80 p-6 shadow-[0_12px_32px_rgba(0,0,0,0.16)] backdrop-blur-md sm:p-8 md:p-10">
-          <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+          <div className="grid gap-8 lg:grid-cols-[1.05fr_1fr] lg:items-stretch lg:gap-10">
             <div className="max-w-xl">
               <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-black/60">
                 Let’s build something memorable
@@ -322,7 +360,16 @@ export default function App() {
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex min-w-0 w-full flex-col justify-between gap-8 sm:gap-10">
+              <img
+                src="/assets/contact-minecraft.png"
+                alt="Three Minecraft characters relaxing together beneath pink blossoms"
+                width={2560}
+                height={1440}
+                loading="lazy"
+                className="aspect-video w-full rounded-[22px] object-cover shadow-lg lg:aspect-[4/3]"
+              />
+              <div className="flex flex-wrap gap-3">
               <a
                 href="mailto:kumarsaraswat1983@gmail.com"
                 className="inline-flex items-center justify-center rounded-full bg-black px-5 py-3 text-sm font-medium text-white transition-opacity hover:opacity-90"
@@ -345,6 +392,7 @@ export default function App() {
               >
                 View work
               </a>
+              </div>
             </div>
           </div>
         </div>
@@ -357,5 +405,6 @@ export default function App() {
         Kumar Manu Saraswat &copy; 2026
       </footer>
     </main>
+    </>
   );
 }
