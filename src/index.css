@@ -53,6 +53,31 @@ body {
   min-height: 100vh;
 }
 
+.portfolio-backdrop { position: fixed; inset: 0; z-index: 0; background: linear-gradient(135deg, #713727, #b65635 55%, #e37d4c); pointer-events: none; }
+.background-scene { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+#hero-background-video { width: 100%; height: 100%; object-fit: cover; object-position: center; pointer-events: none; }
+.background-shade { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, #0000007a 0%, #0000003d 42%, #0000000a 78%, #0000001f 100%); }
+.background-video-toggle { position: absolute; left: 16px; bottom: 12px; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 10px 16px; border: 1px solid #ffffff66; border-radius: 999px; background: #0009; color: white; font-size: 12px; pointer-events: auto; cursor: pointer; touch-action: manipulation; }
+.background-video-toggle:focus-visible { outline: 2px solid white; outline-offset: 3px; }
+section[id] { scroll-margin-top: 100px; }
+@media (max-width: 1023px) {
+  /* Reserve an unobscured, full-frame stage above the intro on phones/tablets. */
+  .background-scene { position: absolute; top: 88px; right: 0; bottom: auto; left: 0; height: 56.25vw; z-index: 20; }
+  #hero-background-video { object-fit: contain; }
+  .background-shade { background: linear-gradient(180deg, transparent, #00000026); }
+  #hero { min-height: 100svh; align-items: flex-start; padding-top: calc(88px + 56.25vw + 24px); padding-bottom: 48px; }
+  #hero > div { max-width: none; }
+  #hero > div > div { max-width: none; }
+  #hero h1 { font-size: clamp(32px, 5.5vw, 52px); }
+  #agency-footer { position: relative; left: auto; bottom: auto; padding: 0 24px 24px; }
+}
+@media (max-width: 639px) {
+  #mobile-nav-overlay { gap: 20px; padding-top: 96px; padding-bottom: 24px; overflow-y: auto; }
+  #mobile-menu-toggle { min-height: 44px; min-width: 44px; }
+  #hero { padding-left: 16px; padding-right: 16px; }
+  #hero > div > div { padding: 24px 20px; }
+}
+
 img,
 video {
   display: block;

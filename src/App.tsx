@@ -321,7 +321,7 @@ export default function App() {
             {experience.map((item) => (
               <div
                 key={`${item.company}-${item.period}`}
-                className="flex items-center justify-between rounded-[22px] border border-white/30 bg-white/75 px-5 py-4 shadow-[0_12px_32px_rgba(0,0,0,0.14)] backdrop-blur-md"
+                className="flex flex-col items-start gap-3 rounded-[22px] border border-white/30 bg-white/75 px-5 py-4 shadow-[0_12px_32px_rgba(0,0,0,0.14)] backdrop-blur-md sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
                   <div className="text-xl text-black">{item.role}</div>

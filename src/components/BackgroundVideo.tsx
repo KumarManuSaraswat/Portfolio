@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const VIDEO_SRC = '/assets/portfolio-video.mp4';
+const MOBILE_QUERY = '(max-width: 1023px)';
 
 export default function BackgroundVideo({ enabled = true, onReady, onError }: {
   enabled?: boolean;
@@ -8,140 +9,103 @@ export default function BackgroundVideo({ enabled = true, onReady, onError }: {
   onError?: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const previousXRef = useRef<number | null>(null);
-  const targetTimeRef = useRef<number>(0);
-  const isSeekingRef = useRef<boolean>(false);
+  const targetTime = useRef(0);
+  const [mobile, setMobile] = useState(() => window.matchMedia(MOBILE_QUERY).matches);
+  const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const [playing, setPlaying] = useState(false);
+  const [manualPlayback, setManualPlayback] = useState<boolean | null>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    if (!enabled) return;
-    const scrubVideo = (currentX: number) => {
-      const video = videoRef.current;
+    const size = window.matchMedia(MOBILE_QUERY);
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => { setMobile(size.matches); setReducedMotion(motion.matches); };
+    size.addEventListener('change', update);
+    motion.addEventListener('change', update);
+    return () => { size.removeEventListener('change', update); motion.removeEventListener('change', update); };
+  }, []);
 
-      if (!video || !video.duration || Number.isNaN(video.duration)) {
-        previousXRef.current = currentX;
-        return;
-      }
-
-      if (previousXRef.current !== null) {
-        const delta = currentX - previousXRef.current;
-        const sensitivity = 0.8;
-
-        const timeOffset =
-          (delta / window.innerWidth) * sensitivity * video.duration;
-
-        const nextTime = targetTimeRef.current + timeOffset;
-
-        targetTimeRef.current = Math.max(
-          0,
-          Math.min(video.duration, nextTime),
-        );
-
-        if (!isSeekingRef.current) {
-          isSeekingRef.current = true;
-          video.currentTime = targetTimeRef.current;
-        }
-      }
-
-      previousXRef.current = currentX;
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const syncPlayback = () => {
+      if (enabled && mobile && !document.hidden && (manualPlayback ?? !reducedMotion)) {
+        // Keep a manual control when battery/data policies block autoplay.
+        void video.play().catch(() => setPlaying(false));
+      } else if (!video.paused) video.pause();
     };
-
-    const handleMouseMove = (event: globalThis.MouseEvent) => {
-      scrubVideo(event.clientX);
-    };
-
-    const handleTouchMove = (event: TouchEvent) => {
-      if (event.touches.length > 0) {
-        scrubVideo(event.touches[0].clientX);
-      }
-    };
-
-    const resetPointerPosition = () => {
-      previousXRef.current = null;
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseleave', resetPointerPosition);
-    window.addEventListener('touchmove', handleTouchMove, {
-      passive: true,
-    });
-    window.addEventListener('touchend', resetPointerPosition);
-
+    syncPlayback();
+    document.addEventListener('visibilitychange', syncPlayback);
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseleave', resetPointerPosition);
-      window.removeEventListener('touchmove', handleTouchMove);
-      window.removeEventListener('touchend', resetPointerPosition);
+      document.removeEventListener('visibilitychange', syncPlayback);
+      if (!video.paused) video.pause();
     };
-  }, [enabled]);
+  }, [enabled, mobile, manualPlayback, reducedMotion]);
 
-  // Also handle a cached first frame that became available before effects ran.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!enabled || mobile || reducedMotion || !video) return;
+    let previousX: number | null = null;
+    targetTime.current = video.currentTime;
+    const move = (event: PointerEvent) => {
+      if (event.pointerType !== 'mouse' || !Number.isFinite(video.duration)) return;
+      if (previousX !== null) {
+        targetTime.current = Math.max(0, Math.min(video.duration,
+          targetTime.current + ((event.clientX - previousX) / window.innerWidth) * 0.8 * video.duration));
+        if (!video.seeking) video.currentTime = targetTime.current;
+      }
+      previousX = event.clientX;
+    };
+    const reset = () => { previousX = null; };
+    window.addEventListener('pointermove', move);
+    document.addEventListener('pointerleave', reset);
+    return () => { window.removeEventListener('pointermove', move); document.removeEventListener('pointerleave', reset); };
+  }, [enabled, mobile, reducedMotion]);
+
   useEffect(() => {
     if (videoRef.current?.readyState >= 2) onReady?.();
   }, [onReady]);
 
-  const handleSeeked = () => {
+  function togglePlayback() {
     const video = videoRef.current;
-
     if (!video) return;
-
-    if (Math.abs(video.currentTime - targetTimeRef.current) > 0.02) {
-      video.currentTime = targetTimeRef.current;
-    } else {
-      isSeekingRef.current = false;
-    }
-  };
-
-  const handleLoadedMetadata = () => {
-    const video = videoRef.current;
-
-    if (video) {
-      targetTimeRef.current = video.currentTime || 0;
-    }
-  };
+    const play = video.paused;
+    setManualPlayback(play);
+    // Call within the gesture for browsers that require user activation.
+    if (play) void video.play().catch(() => setPlaying(false));
+    else video.pause();
+  }
 
   return (
     <>
-      <video
-        ref={videoRef}
-        id="hero-background-video"
-        src={VIDEO_SRC}
-        muted
-        playsInline
-        preload="auto"
-        onSeeked={handleSeeked}
-        onLoadedMetadata={handleLoadedMetadata}
-        onLoadedData={onReady}
-        onCanPlay={onReady}
-        onError={onError}
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          inset: 0,
-
-          width: '100vw',
-          height: '100vh',
-
-          zIndex: 0,
-          objectFit: 'cover',
-          objectPosition: 'center center',
-
-          backgroundColor: '#f10a0a',
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* Dark overlay for better text readability */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 1,
-          pointerEvents: 'none',
-          background:
-            'linear-gradient(90deg, rgba(0,0,0,0.48) 0%, rgba(0,0,0,0.24) 42%, rgba(0,0,0,0.04) 78%, rgba(0,0,0,0.12) 100%)',
-        }}
-      />
+      <div className="portfolio-backdrop" aria-hidden="true" />
+      <div className="background-scene" inert={!enabled} aria-hidden={!enabled}>
+        <video
+          ref={videoRef}
+          id="hero-background-video"
+          src={VIDEO_SRC}
+          muted
+          playsInline
+          loop={mobile}
+          preload="auto"
+          onLoadedData={onReady}
+          onCanPlay={onReady}
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onError={() => { setFailed(true); onError?.(); }}
+          onSeeked={() => {
+            const video = videoRef.current;
+            if (video && enabled && !mobile && !reducedMotion && Math.abs(video.currentTime - targetTime.current) > 0.02) {
+              video.currentTime = targetTime.current;
+            }
+          }}
+          aria-hidden="true"
+        />
+        {mobile && !failed && <button type="button" className="background-video-toggle" onClick={togglePlayback} disabled={!enabled}>
+          <span aria-hidden="true">{playing ? 'Ⅱ' : '▶'}</span> {playing ? 'Pause animation' : 'Play animation'}
+        </button>}
+      </div>
+      <div className="background-shade" aria-hidden="true" />
     </>
   );
 }

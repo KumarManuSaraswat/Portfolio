@@ -106,6 +106,8 @@ export default function Navbar() {
 
       <div
         id="mobile-nav-overlay"
+        inert={!mobileMenuOpen}
+        aria-hidden={!mobileMenuOpen}
         className={`fixed inset-0 z-40 flex flex-col items-start justify-center gap-8 bg-black/45 px-8 backdrop-blur-2xl transition-all duration-300 md:hidden ${
           mobileMenuOpen
             ? 'pointer-events-auto opacity-100'
